@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title>PDF Information</title>
+{% endblock head %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/pdf_viewer.css')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/text_layer_builder.css')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/annotation_helper.css')}}">
+{% endblock css %}
+{% block content %}
+<div class="content-section">
+    <div class="row">
+        <div class="top-bar">
+            <div class="row">
+                <div class="col-6">
+                    <button class="btn btn-primary" id="prev-page">
+                     Prev Page
+                    </button>
+                    <button class="btn btn-primary" id="next-page">
+                       Next Page
+                    </button>
+                    <span class="page-info">
+                       Page <span id="page-num"></span> of <span id="page-count"></span>
+                    </span>
+                </div>
+                <div class="col-6">
+                    <div class="input-group mb-3">
+                      <div class="input-group-prepend">
+                        <label class="input-group-text" for="inputGroupSelect01">Selected Tag</label>
+                      </div>
+                      <select class="custom-select" id="selected-tag">
+                        <option value="name">Name</option>
+                        <option value="place">Place</option>
+                        <option value="time">Time</option>
+                      </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-6">
+                    <span id="file_name">{{filename}}</span>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-info" id="add-tag-type">
+                         Add New Tag Type
+                    </button>
+                    <button class="btn btn-success" id="save-tag" onclick="saveTagSelectedText();" value="Save Tag">
+                         Save Tag
+                    </button>
+                    <button class="btn btn-danger" id="remove-tag" onclick="removeTagSelectedText();" value="Remove Tag">
+                        Remove Tag
+                    </button>
+                    <form action="{{request.url}}" method="get">
+                        Preserve Highlights
+                        <br>
+                        <input type="hidden" name="serializedHighlights">
+                    <button type="submit" value="Reload" onclick="reloadPage(this)">Save All Tags</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="view-area">
+        <div id="viewer-container">
+            <canvas id="the-canvas"></canvas>
+            <div id="text-layer" class="textLayer"></div>
+        </div>
+  </div>
+</div>
+{% endblock content%}
+{% block script %}
+<script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+<script src="https://mozilla.github.io/pdf.js/build/pdf.worker.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-core.min.js" integrity="sha512-N+AGrlJCI4ov6LmtY/2SIm8kAcSAp9lhrYhVFmUhMBuFwQy3xEMNj+cPG4bg0N4XkL7Rw2+sKW8hg8v1MF5yLQ==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-highlighter.min.js" integrity="sha512-I+15hnvXZEkBmdHXIN4N59PY+dbkKBqjQpA+N9fNh9ljYKcrXbgjVilILDXgO9cfdncwB00rcEQt2IsvZjflPA==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-selectionsaverestore.min.js" integrity="sha512-40/cVQ39VPjTs1eG+XPt/iFbY+d3FwiH2YbH/nhy1XDr1i1elaxIM1+r7Xy3MMrz/RCsRTYNXKyJEhu/8AGQlg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-textrange.min.js" integrity="sha512-B/3u37TOSGL4oI7qB11UIZi1QB/TyBmp0eZXvyr1xjA9CikKxLbiedP2nX+mUvzCc8Mfxrpjvviy7xZeO2S5tQ==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-classapplier.min.js" integrity="sha512-2Fxf2CgovcFRS+dkK9j68CxEBJfh0ukrHOYigMTR4Dw/y+KWda8Lj2ubH6lXnjprmHf/MCEpF/kP/fSMjrrRRg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-serializer.min.js" integrity="sha512-hbAbxf3R+mrR/EeXOZlxdS2gBO9GmKRrd9kIpRtLV97C0Kq6B+Z5vQLrSi8XmvXkft5k5o/snZK+IR/UqEIb/A==" crossorigin="anonymous"></script>
+<script src="{{url_for('static', filename='js/pdf_viewer.js')}}"></script>
+<script src="{{url_for('static', filename='js/text_layer_builder.js')}}"></script>
+<script src="{{url_for('static', filename='js/annotation_helper.js')}}"></script>
+{% endblock script %}

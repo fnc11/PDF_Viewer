@@ -1,0 +1,19 @@
+.highlight {
+    background-color: yellow;
+}
+
+.note {
+    background-color: limegreen;
+}
+
+.name-tag {
+    background-color: red;
+}
+
+.place-tag {
+    background-color: blue;
+}
+
+.time-tag {
+    background-color: green;
+}
