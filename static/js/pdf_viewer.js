@@ -1,4 +1,112 @@
-const url = '../static/uploads/' + document.querySelector('#file_name').textContent
+const pdf_name = document.querySelector('#file_name').textContent
+const url = '../static/uploads/' + pdf_name
+
+var serializedHighlights;
+var highlighter;
+window.onload = function() {
+    rangy.init();
+    highlighter = rangy.createHighlighter();
+    highlighter.addClassApplier(rangy.createClassApplier("highlight", {
+        ignoreWhiteSpace: true,
+        tagNames: ["span", "a"]
+    }));
+    highlighter.addClassApplier(rangy.createClassApplier("name-tag", {
+        ignoreWhiteSpace: true,
+        elementTagName: "a",
+        elementProperties: {
+            href: "#",
+            onclick: function() {
+                var highlight = highlighter.getHighlightForElement(this);
+                if (window.confirm("Delete this note (ID " + highlight.id + ")?")) {
+                    highlighter.removeHighlights( [highlight] );
+                }
+                return false;
+            }
+        }
+    }));
+
+    highlighter.addClassApplier(rangy.createClassApplier("place-tag", {
+        ignoreWhiteSpace: true,
+        elementTagName: "a",
+        elementProperties: {
+            href: "#",
+            onclick: function() {
+                var highlight = highlighter.getHighlightForElement(this);
+                if (window.confirm("Delete this note (ID " + highlight.id + ")?")) {
+                    highlighter.removeHighlights( [highlight] );
+                }
+                return false;
+            }
+        }
+    }));
+
+    highlighter.addClassApplier(rangy.createClassApplier("time-tag", {
+        ignoreWhiteSpace: true,
+        elementTagName: "a",
+        elementProperties: {
+            href: "#",
+            onclick: function() {
+                var highlight = highlighter.getHighlightForElement(this);
+                if (window.confirm("Delete this note (ID " + highlight.id + ")?")) {
+                    highlighter.removeHighlights( [highlight] );
+                }
+                return false;
+            }
+        }
+    }));
+
+
+    if (serializedHighlights) {
+        highlighter.deserialize(serializedHighlights);
+    }
+};
+
+
+function saveTagSelectedText() {
+    let selectedTag = document.getElementById('selected-tag').value + "-tag"
+    highlighter.highlightSelection(selectedTag);
+}
+function highlightSelectedText() {
+    highlighter.highlightSelection("highlight");
+}
+
+function noteSelectedText() {
+    highlighter.highlightSelection("note");
+}
+
+function removeTagSelectedText() {
+    highlighter.unhighlightSelection();
+}
+
+
+function reloadPage(button) {
+    button.form.elements["serializedHighlights"].value = highlighter.serialize();
+    button.form.submit();
+}
+function isEmpty(str) {
+    return (!str || 0 === str.length);
+}
+
+function addNewTagType() {
+    let new_tag_name = $('new-tag-type').value;
+    let new_tag_color = $('new-tag-color').value;
+    if(isEmpty(new_tag_name)||isEmpty(new_tag_color)){
+        $('new-tag-error').css({visibility : visible});
+        console.log("Empty values");
+    } else {
+        $('#tagModal').modal('hide');
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 let pdfDoc = null,
   pageNum = 1,
@@ -52,8 +160,9 @@ const renderPage = num => {
             container: $("#text-layer").get(0),
             viewport: viewport,
          });
+         highlighter.removeAllHighlights();
+         renderPageTagInfo();
     });
-
     // Output current page
     document.querySelector('#page-num').textContent = num;
   });
@@ -68,11 +177,69 @@ const queueRenderPage = num => {
   }
 };
 
+const renderPageTagInfo = () => {
+let page_info = {
+    pdf_name : pdf_name,
+    page_num: pageNum,
+  };
+  fetch(`/get_tag_info/`+pdf_name+'/'+pageNum, {
+    method: "GET",
+    headers: new Headers({
+      "content-type": "application/json"
+    })
+  }).then(function(response) {
+    if (response.status !== 200) {
+      console.log(`Looks like there was a problem. Status code: ${response.status}`);
+      return;
+    }
+    response.json().then(function(data) {
+    console.log("Get Res");
+      console.log(data);
+      if (data['value']=='valid'){
+        highlighter.deserialize(data['serialized_val']);
+      }
+    });
+  })
+  .catch(function(error) {
+    console.log("Fetch error: " + error);
+    });
+};
+
+
+const savePageTagInfo = () => {
+let page_tag = {
+    pdf_name : pdf_name,
+    page_num: pageNum,
+    serialized_val : highlighter.serialize()
+  };
+  fetch(`/save_tag_info`, {
+    method: "POST",
+    body: JSON.stringify(page_tag),
+    headers: new Headers({
+      "content-type": "application/json"
+    })
+  }).then(function(response) {
+    if (response.status !== 200) {
+      console.log(`Looks like there was a problem. Status code: ${response.status}`);
+      return;
+    }
+    response.json().then(function(data) {
+       console.log("Save Res");
+      console.log(data);
+    });
+  })
+  .catch(function(error) {
+    console.log("Fetch error: " + error);
+    });
+}
+
+
 // Show Prev Page
 const showPrevPage = () => {
   if (pageNum <= 1) {
     return;
   }
+  savePageTagInfo();
   pageNum--;
   queueRenderPage(pageNum);
 };
@@ -82,6 +249,8 @@ const showNextPage = () => {
   if (pageNum >= pdfDoc.numPages) {
     return;
   }
+  savePageTagInfo();
+
   pageNum++;
   queueRenderPage(pageNum);
 };
@@ -91,9 +260,7 @@ pdfjsLib
   .getDocument(url)
   .promise.then(pdfDoc_ => {
     pdfDoc = pdfDoc_;
-
     document.querySelector('#page-count').textContent = pdfDoc.numPages;
-
     renderPage(pageNum);
   })
   .catch(err => {

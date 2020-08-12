@@ -44,7 +44,7 @@
                     <span id="file_name">{{filename}}</span>
                 </div>
                 <div class="col-6">
-                    <button class="btn btn-info" id="add-tag-type">
+                    <button class="btn btn-info" id="add-tag-type" data-toggle="modal" data-target="#tagModal">
                          Add New Tag Type
                     </button>
                     <button class="btn btn-success" id="save-tag" onclick="saveTagSelectedText();" value="Save Tag">
@@ -53,12 +53,6 @@
                     <button class="btn btn-danger" id="remove-tag" onclick="removeTagSelectedText();" value="Remove Tag">
                         Remove Tag
                     </button>
-                    <form action="{{request.url}}" method="get">
-                        Preserve Highlights
-                        <br>
-                        <input type="hidden" name="serializedHighlights">
-                    <button type="submit" value="Reload" onclick="reloadPage(this)">Save All Tags</button>
-                    </form>
                 </div>
             </div>
         </div>
@@ -69,6 +63,34 @@
             <div id="text-layer" class="textLayer"></div>
         </div>
   </div>
+
+    <div class="modal fade" id="tagModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">New Tag Type</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+              <div class="form-group">
+                <label for="new-tag-type">New Tag</label>
+                <input type="text" class="form-control" id="new-tag-type" placeholder="Enter new name tag">
+              </div>
+              <div class="form-group">
+                <label for="new-tag-color">Tag Color</label>
+                <input type="text" class="form-control" id="new-tag-color" placeholder="Highlight Color">
+              </div>
+          <span id="new-tag-error">Please put valid name and color.</span>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="add-new-type" onclick="addNewTagType();">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
 </div>
 {% endblock content%}
 {% block script %}
